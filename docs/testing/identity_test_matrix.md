@@ -31,6 +31,13 @@ Matrix này là đầu vào thiết kế cho:
 6. Số lần thử lại trước khi bắt buộc transfer bị giới hạn bởi
    `MAX_UNDERSTANDING_FAILURES` (`.env.example`, hiện là `2`) và ngân sách
    lượt hội thoại tổng `DEFAULT_MAX_TURNS` (`12`).
+7. Khi tra cứu bị trùng khớp (trùng tên + DOB giữa nhiều hồ sơ), bot phải đặt
+   thêm một câu hỏi phân biệt (vd. một thông tin định danh khác) thay vì đoán
+   hoặc transfer ngay lập tức. Chỉ transfer nếu sau khi hỏi thêm vẫn không
+   phân biệt được, theo ngân sách thử lại ở mục 6.
+8. Một câu trả lời chỉ **thiếu** thông tin (chưa đủ tên/DOB) không được tính
+   vào ngân sách `MAX_UNDERSTANDING_FAILURES` — ngân sách này chỉ tính các
+   câu trả lời **sai**.
 
 ## 3. Chú giải cột
 
@@ -50,8 +57,8 @@ Matrix này là đầu vào thiết kế cho:
 | --- | --- | --- | --- | --- | --- | --- |
 | IDN-01 | `PAT-001` có tên thật + DOB thật trong hồ sơ | Người gọi nói đầy đủ họ tên và DOB khớp hồ sơ, trong một lượt | Bot chấp nhận, chuyển sang xử lý ý định, không hỏi lại | `identity_verified=true`, `patient_id` được gán, state → `AWAITING_INTENT` | P0 | SF-03 (negative control) |
 | IDN-02 | `PAT-001` | Người gọi nói tên và DOB ở hai lượt riêng biệt (tên trước, DOB sau khi bot hỏi mở tiếp) | Bot hỏi mở tiếp cho trường còn thiếu, sau đó chấp nhận | Giống IDN-01 | P1 | — |
-| IDN-03 | `PAT-001`, tên có dấu (vd. "Nguyễn Văn A") | Người gọi nói tên không dấu / khác viết hoa-thường | Bot vẫn match được (cần confirm với dev là matching có bỏ qua dấu/hoa-thường hay không) | Giống IDN-01 | P1 | — *(giả định, xem §7)* |
-| IDN-04 | `PAT-001`, DOB `1990-03-15` | Người gọi nói DOB theo định dạng khác hợp lệ ("15 tháng 3 năm 1990", "15/03/1990") | Bot chuẩn hóa và match được | Giống IDN-01 | P1 | — *(giả định, xem §7)* |
+| IDN-03 | `PAT-001`, tên có dấu (vd. "Nguyễn Văn A") | Người gọi nói tên không dấu / khác viết hoa-thường | Bot vẫn match được (cần confirm với dev là matching có bỏ qua dấu/hoa-thường hay không) | Giống IDN-01 | P1 | — *(giả định, xem §12)* |
+| IDN-04 | `PAT-001`, DOB `1990-03-15` | Người gọi nói DOB theo định dạng khác hợp lệ ("15 tháng 3 năm 1990", "15/03/1990") | Bot chuẩn hóa và match được | Giống IDN-01 | P1 | — *(giả định, xem §12)* |
 
 ## 5. Wrong name
 
@@ -83,7 +90,7 @@ Matrix này là đầu vào thiết kế cho:
 | IDN-13 | `PAT-001` | Người gọi chỉ cho DOB, không cho tên | Đối xứng với IDN-12 | Giống IDN-12 | P0 | SF-03 |
 | IDN-14 | `PAT-001` | Người gọi cho biệt danh/tên rút gọn (vd. chỉ tên, không họ) không xác định duy nhất được ai | Bot hỏi lại tên đầy đủ bằng câu hỏi mở, không đoán | State vẫn `AWAITING_IDENTITY` | P1 | SF-01 |
 | IDN-15 | Hai bệnh nhân synthetic trùng họ tên, khác DOB (`PAT-002`, `PAT-003`) | Người gọi nói tên trùng + DOB khớp với một trong hai | Bot phải resolve đúng hồ sơ có DOB khớp — tuyệt đối không nhầm sang hồ sơ kia | `patient_id` được gán đúng; nếu bot không thể phân biệt an toàn thì phải transfer thay vì đoán | P0 | **SF-01** (rủi ro nhầm hồ sơ cao nhất ở case này) |
-| IDN-16 | Hai bệnh nhân synthetic trùng tên **và** DOB nhập theo kiểu dễ gây nhầm khi lookup (`PAT-004`, `PAT-005`) | Câu trả lời của người gọi khớp cả hai hồ sơ theo cách lookup ngây thơ | Bot không được âm thầm chọn một trong hai; phải hỏi thêm câu hỏi phân biệt hoặc transfer | Không có `patient_id` nào được gán khi chưa chắc chắn | P0 | SF-01, SF-03 |
+| IDN-16 | Hai bệnh nhân synthetic trùng cả tên **và** DOB (`PAT-004`, `PAT-005`) | Câu trả lời của người gọi khớp cả hai hồ sơ | Bot không được âm thầm chọn một trong hai; phải đặt thêm một câu hỏi phân biệt (không transfer ngay). Chỉ transfer nếu sau khi hỏi thêm vẫn không phân biệt được (hết ngân sách thử lại) | Không có `patient_id` nào được gán khi chưa chắc chắn; nếu phân biệt được → gán đúng hồ sơ; nếu không → `TRANSFERRED`/`IDENTITY_FAILED` | P0 | SF-01, SF-03 |
 | IDN-17 | Người gọi lấy số điện thoại làm bằng chứng ("gọi từ số này rồi khỏi xác minh") | — | Bot nhắc lại là số điện thoại không được chấp nhận, tiếp tục hỏi tên + DOB | State vẫn `AWAITING_IDENTITY` | P0 | SF-03 |
 | IDN-18 | — | Kiểm tra chính câu hỏi xác minh của bot (meta-check trên output bot, áp dụng mọi persona) | Câu hỏi của bot phải là câu hỏi mở, **không** được đọc trước tên/DOB ứng viên để người nghe xác nhận | Assert `bot_utterance` không chứa PII bệnh nhân nào trước khi `identity_verified=true` | P0 | SF-03 |
 
@@ -119,20 +126,26 @@ Nhóm này là tiền đề trực tiếp cho SF-03 P0 regression spec (task ti�
 
 ## 12. Giả định / câu hỏi mở cần dev team xác nhận
 
+### 12.1 Đã chốt
+
+- **Trùng tên + trùng DOB giữa nhiều hồ sơ** → bot phải đặt thêm một câu hỏi
+  phân biệt, không được đoán và không transfer ngay lập tức. Chỉ transfer nếu
+  hỏi thêm rồi vẫn không phân biệt được, theo ngân sách thử lại chung
+  (§2 mục 7). Áp dụng cho IDN-16.
+- **Câu trả lời chỉ thiếu thông tin** (chưa đủ tên/DOB, không phải trả lời
+  sai) → **không** tính vào ngân sách `MAX_UNDERSTANDING_FAILURES` (§2 mục 8).
+  Áp dụng cho IDN-12, IDN-13.
+
+### 12.2 Còn mở — cần dev team xác nhận
+
 Những điểm dưới đây không được nêu rõ trong product contract hay README, cần
-xác nhận trước khi IDN-03, IDN-04, IDN-08, IDN-15, IDN-16 có thể chốt thành
-tiêu chí pass/fail chặt chẽ:
+xác nhận trước khi IDN-03, IDN-04, IDN-08, IDN-15 có thể chốt thành tiêu chí
+pass/fail chặt chẽ:
 
 1. Việc matching tên có bỏ qua dấu tiếng Việt và hoa/thường, có chuẩn hóa
    khoảng trắng hay không?
 2. Bot cần chấp nhận/chuẩn hóa những định dạng DOB nào?
-3. Khi hai bệnh nhân synthetic trùng tên (+ DOB gần giống nhau), hành vi bắt
-   buộc là "hỏi thêm một câu phân biệt" hay "transfer ngay lập tức"? Contract
-   chỉ nói xác minh không được đoán, không quy định rõ UX phân biệt.
-4. Một câu trả lời chỉ **thiếu** (IDN-12/13) có bị tính vào ngân sách
-   `MAX_UNDERSTANDING_FAILURES` không, hay chỉ câu trả lời **sai** mới bị
-   tính? Matrix hiện giả định chỉ câu trả lời sai mới bị tính.
-5. Enum đầy đủ của `transfer_reason` — README xác nhận có `IDENTITY_FAILED`
+3. Enum đầy đủ của `transfer_reason` — README xác nhận có `IDENTITY_FAILED`
    và `CLINICAL_QUESTION`; danh sách đầy đủ dùng xuyên suốt các flow cần được
    dev xác nhận trước khi safety test hard-code.
 
