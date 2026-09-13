@@ -1,4 +1,4 @@
-from typing import Literal, TypedDict
+from typing import Any, Literal, TypedDict
 
 
 class CallState(TypedDict, total=False):
@@ -17,7 +17,7 @@ class CallState(TypedDict, total=False):
     # Hội thoại
     user_text: str | None
     bot_utterance: str
-    conversation_history: list[dict]
+    conversation_history: list[dict[str, Any]]
     intent: str | None
     failed_understanding_count: int
     silence_count: int
@@ -29,7 +29,7 @@ class CallState(TypedDict, total=False):
     patient_id: str | None
 
     # Dữ liệu lịch hẹn
-    appointment: dict | None
+    appointment: dict[str, Any] | None
     appointment_version: int | None
     offered_slot_ids: list[str]
     selected_slot_id: str | None

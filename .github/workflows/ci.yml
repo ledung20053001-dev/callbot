@@ -1,0 +1,76 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  lint-typecheck-test:
+    name: Lint, typecheck, unit/smoke tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+
+      - name: Install dependencies
+        run: make install
+
+      - name: Lint (ruff)
+        run: make lint
+
+      - name: Type check (mypy)
+        run: make typecheck
+
+      - name: Unit / smoke tests
+        run: |
+          set +e
+          make test-fast
+          status=$?
+          set -e
+          # Week 1 bootstrap only: most tests/unit, tests/agents and
+          # tests/api files are still empty stubs, so pytest's "no tests
+          # ran" (exit code 5) is expected, not a failure. Any other
+          # non-zero exit (a real failure or error) still fails the job.
+          # Remove this tolerance once those suites have real test cases —
+          # see docs/testing/ci_baseline.md.
+          if [ "$status" -ne 0 ] && [ "$status" -ne 5 ]; then
+            exit "$status"
+          fi
+
+  identity-regression:
+    name: Identity safety regression (SF-01 / SF-03)
+    runs-on: ubuntu-latest
+    needs: lint-typecheck-test
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+
+      - name: Install dependencies
+        run: make install
+
+      - name: Run identity safety tests
+        run: |
+          set +e
+          make test-safety
+          status=$?
+          set -e
+          # Same Week 1 bootstrap tolerance as the job above:
+          # tests/safety/test_sf0*.py are still empty stubs pending the
+          # pytest.mark.parametrize conversion of
+          # docs/testing/identity_test_matrix.md and
+          # docs/testing/sf03_regression_spec.md. This job is meant to
+          # expand through Week 1 as those cases land — remove the exit-5
+          # tolerance the moment the first real case is added, so that a
+          # genuinely broken/deleted safety test starts failing the build.
+          if [ "$status" -ne 0 ] && [ "$status" -ne 5 ]; then
+            exit "$status"
+          fi
