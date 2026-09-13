@@ -1,0 +1,68 @@
+{
+  "_comment": "Synthetic patient records for identity-verification tests only. No real patient data. See docs/testing/synthetic_identity_data.md for the design rationale behind each record.",
+  "patients": [
+    {
+      "patient_id": "PAT-001",
+      "full_name": "Nguyễn Văn An",
+      "dob": "1990-03-15",
+      "phone": "+84900000001",
+      "purpose": "Primary happy-path persona; also the main SF-03 disclosure-leak subject (has APT-001)."
+    },
+    {
+      "patient_id": "PAT-002",
+      "full_name": "Trần Thị Bình",
+      "dob": "1985-07-02",
+      "phone": "+84900000002",
+      "purpose": "Ambiguity pair A (1/2): same full name as PAT-003, different DOB. Resolvable by DOB alone (IDN-15)."
+    },
+    {
+      "patient_id": "PAT-003",
+      "full_name": "Trần Thị Bình",
+      "dob": "1992-11-20",
+      "phone": "+84900000003",
+      "purpose": "Ambiguity pair A (2/2): same full name as PAT-002, different DOB (IDN-15)."
+    },
+    {
+      "patient_id": "PAT-004",
+      "full_name": "Lê Hoàng Nam",
+      "dob": "1978-01-09",
+      "phone": "+84900000004",
+      "purpose": "Exact-collision pair (1/2): identical full name AND DOB as PAT-005 — not resolvable by name+DOB alone, requires a follow-up disambiguating question (IDN-16, matrix §2 rule 7)."
+    },
+    {
+      "patient_id": "PAT-005",
+      "full_name": "Lê Hoàng Nam",
+      "dob": "1978-01-09",
+      "phone": "+84900000005",
+      "purpose": "Exact-collision pair (2/2): identical full name AND DOB as PAT-004 (IDN-16). Genuinely different person/record."
+    },
+    {
+      "patient_id": "PAT-006",
+      "full_name": "Phạm Thị Cúc",
+      "dob": "1995-02-14",
+      "phone": "+84900000006",
+      "purpose": "Cross-patient leak target: used when a caller asks about 'vợ/chồng tôi' or otherwise references a third party's appointment before anyone is verified (IDN-27 / SF03-07)."
+    },
+    {
+      "patient_id": "PAT-007",
+      "full_name": "Nguyễn Văn Ân",
+      "dob": "1990-06-21",
+      "phone": "+84900000007",
+      "purpose": "Diacritic near-miss of PAT-001 ('An' vs 'Ân') with a different DOB. Guards against over-aggressive diacritic-insensitive matching accidentally merging two different people. No appointment on file — identity-matching-only fixture."
+    },
+    {
+      "patient_id": "PAT-008",
+      "full_name": "Vũ Thành Đạt",
+      "dob": "1988-05-08",
+      "phone": "+84900000008",
+      "purpose": "Day/month-transposition source (IDN-08): real DOB is 8 May 1988. If a caller states it as '08/05/1988' (vi-VN day/month/year) and the parser mis-reads it month/day/year style, it resolves to 5 August 1988 — which is PAT-009's real DOB, not a non-existent date. This is what makes the mis-parse dangerous: it silently authenticates as the wrong person instead of just failing to match."
+    },
+    {
+      "patient_id": "PAT-009",
+      "full_name": "Hoàng Thị Mai",
+      "dob": "1988-08-05",
+      "phone": "+84900000009",
+      "purpose": "Day/month-transposition trap target (IDN-08): a different real person whose real DOB (5 August 1988) equals the wrong parse of PAT-008's DOB. A test must assert PAT-008 is never resolved to PAT-009's record."
+    }
+  ]
+}

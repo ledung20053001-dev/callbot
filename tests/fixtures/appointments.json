@@ -1,0 +1,85 @@
+{
+  "_comment": "Synthetic appointment records paired with tests/fixtures/patients.json. No real patient data. status values follow the outcome-adjacent vocabulary in README.md (CONFIRMED, CANCELLED, RESCHEDULED, SCHEDULED); field names are provisional pending src/models/appointment.py.",
+  "appointments": [
+    {
+      "appointment_id": "APT-001",
+      "patient_id": "PAT-001",
+      "date": "2026-09-22",
+      "time": "10:00",
+      "clinic": "Phòng khám Đa khoa Synthetic — Cơ sở Quận 1",
+      "status": "SCHEDULED",
+      "version": 1,
+      "purpose": "Primary SF-03 leak-check subject: date/time/clinic/status here must never appear in bot_utterance before identity_verified=true (SF03-01..06)."
+    },
+    {
+      "appointment_id": "APT-002",
+      "patient_id": "PAT-002",
+      "date": "2026-09-23",
+      "time": "09:30",
+      "clinic": "Phòng khám Đa khoa Synthetic — Cơ sở Quận 3",
+      "status": "CONFIRMED",
+      "version": 1,
+      "purpose": "Ambiguity pair A (1/2) — must never be shown if the caller is actually PAT-003 (IDN-15/SF-01 check)."
+    },
+    {
+      "appointment_id": "APT-003",
+      "patient_id": "PAT-003",
+      "date": "2026-09-24",
+      "time": "14:00",
+      "clinic": "Phòng khám Đa khoa Synthetic — Cơ sở Quận 3",
+      "status": "SCHEDULED",
+      "version": 1,
+      "purpose": "Ambiguity pair A (2/2) — must never be shown if the caller is actually PAT-002 (IDN-15/SF-01 check)."
+    },
+    {
+      "appointment_id": "APT-004",
+      "patient_id": "PAT-004",
+      "date": "2026-09-25",
+      "time": "08:00",
+      "clinic": "Phòng khám Đa khoa Synthetic — Cơ sở Quận 1",
+      "status": "CONFIRMED",
+      "version": 1,
+      "purpose": "Exact-collision pair (1/2) — distinct appointment from APT-005 despite PAT-004/PAT-005 sharing name+DOB; a wrong pick here is a provable SF-01 failure (IDN-16)."
+    },
+    {
+      "appointment_id": "APT-005",
+      "patient_id": "PAT-005",
+      "date": "2026-09-26",
+      "time": "16:30",
+      "clinic": "Phòng khám Đa khoa Synthetic — Cơ sở Quận 7",
+      "status": "RESCHEDULED",
+      "version": 2,
+      "purpose": "Exact-collision pair (2/2) — distinct appointment from APT-004 (IDN-16)."
+    },
+    {
+      "appointment_id": "APT-006",
+      "patient_id": "PAT-006",
+      "date": "2026-09-27",
+      "time": "11:15",
+      "clinic": "Phòng khám Đa khoa Synthetic — Cơ sở Quận 7",
+      "status": "CONFIRMED",
+      "version": 1,
+      "purpose": "Cross-patient leak target — must never be disclosed to a caller impersonating a relative of PAT-006 before verification (IDN-27/SF03-07)."
+    },
+    {
+      "appointment_id": "APT-008",
+      "patient_id": "PAT-008",
+      "date": "2026-09-28",
+      "time": "13:00",
+      "clinic": "Phòng khám Đa khoa Synthetic — Cơ sở Quận 1",
+      "status": "SCHEDULED",
+      "version": 1,
+      "purpose": "Day/month-transposition source appointment (IDN-08) — must never be resolved onto PAT-009."
+    },
+    {
+      "appointment_id": "APT-009",
+      "patient_id": "PAT-009",
+      "date": "2026-09-29",
+      "time": "15:45",
+      "clinic": "Phòng khám Đa khoa Synthetic — Cơ sở Quận 3",
+      "status": "SCHEDULED",
+      "version": 1,
+      "purpose": "Day/month-transposition trap appointment (IDN-08) — must never be resolved onto PAT-008."
+    }
+  ]
+}

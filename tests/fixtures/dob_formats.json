@@ -1,0 +1,41 @@
+{
+  "_comment": "DOB format-equivalence fixtures for identity tests. Not patient records — pairs a canonical DOB (from patients.json) with alternate spoken/written forms that MUST still match (IDN-04), and forms that LOOK similar but MUST NOT match (IDN-08). Exact accepted format list is still open — see identity_test_matrix.md §12.2 item 2.",
+  "equivalent_formats": [
+    {
+      "patient_id": "PAT-001",
+      "canonical_dob": "1990-03-15",
+      "accepted_variants": [
+        "15/03/1990",
+        "15-03-1990",
+        "15.03.1990",
+        "ngày 15 tháng 3 năm 1990",
+        "15 thang 3 1990"
+      ],
+      "purpose": "IDN-04: all variants below must normalize to the same match result as the canonical form."
+    }
+  ],
+  "transposition_traps": [
+    {
+      "description": "IDN-08: day/month swap must not silently authenticate as a different real patient.",
+      "source_patient_id": "PAT-008",
+      "source_canonical_dob": "1988-05-08",
+      "source_spoken_form_vi": "08/05/1988",
+      "wrong_parse_if_month_day_year": "1988-08-05",
+      "colliding_patient_id": "PAT-009",
+      "colliding_patient_real_dob": "1988-08-05",
+      "assertion": "Parsing PAT-008's spoken DOB must resolve to 1988-05-08 (PAT-008) and must never resolve to PAT-009."
+    }
+  ],
+  "non_matching_near_misses": [
+    {
+      "description": "IDN-03/IDN-07 style near-miss: a single digit or diacritic difference from a real record's DOB must be rejected, not fuzzy-matched.",
+      "patient_id": "PAT-001",
+      "canonical_dob": "1990-03-15",
+      "rejected_inputs": [
+        "1990-03-16",
+        "1990-03-05",
+        "1991-03-15"
+      ]
+    }
+  ]
+}
