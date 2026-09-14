@@ -1,0 +1,24 @@
+services:
+  callbot:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    env_file:
+      - path: .env
+        required: false
+    environment:
+      APP_HOST: 0.0.0.0
+      APP_PORT: 8000
+      CLINIC_API_BASE_URL: ${CLINIC_API_BASE_URL:-http://host.docker.internal:8080}
+    ports:
+      - "${APP_PORT:-8000}:8000"
+    volumes:
+      - callbot_audio:/app/audio/output
+      - callbot_logs:/app/.ai-log
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    restart: unless-stopped
+
+volumes:
+  callbot_audio:
+  callbot_logs:
