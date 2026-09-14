@@ -174,6 +174,37 @@ python -m pip install -e ".[dev,llm-openai,audio,telephony-twilio]"
 
 Các biến môi trường được mô tả trong `.env.example`. Không commit tệp `.env` hoặc khóa truy cập thật. Image Clinic Mock phải lấy từ starter kit chính thức và không được chỉnh sửa.
 
+## Khởi động giao diện nội bộ
+
+Từ PowerShell, chuyển vào thư mục dự án và chạy FastAPI bằng Python trong môi trường ảo:
+
+```powershell
+cd D:\DATA\Visual\callbot
+.\.venv\Scripts\python.exe -m uvicorn src.main:app --reload
+```
+
+Sau khi server báo `Application startup complete`, mở giao diện tại:
+
+```text
+http://127.0.0.1:8000/internal/
+```
+
+Góc trên bên phải phải hiển thị `READY · V6`. Khi nhấn **Start call**, terminal phải ghi nhận request:
+
+```text
+POST /v1/calls HTTP/1.1 201 Created
+```
+
+Nếu giao diện vẫn hiển thị `LOADING UI`, hãy thực hiện lần lượt:
+
+1. Dừng server bằng `Ctrl + C`.
+2. Chạy lại câu lệnh Uvicorn ở trên.
+3. Đóng tab giao diện cũ.
+4. Mở lại URL sạch `http://127.0.0.1:8000/internal/`.
+5. Nhấn `Ctrl + F5` nếu trình duyệt vẫn sử dụng tài nguyên cũ.
+
+Để dừng ứng dụng, quay lại terminal đang chạy Uvicorn và nhấn `Ctrl + C`.
+
 ## Tiêu chí thành công
 
 Dự án được đánh giá chủ yếu dựa trên trạng thái cuối trong Clinic Mock, khả năng tránh lỗi nghiêm trọng, độ trễ, chi phí, kiểm thử và chất lượng vận hành. Cuộc gọi điện thoại thật ở tuần 6 là điều kiện hoàn thành bắt buộc.
