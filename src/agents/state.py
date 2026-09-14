@@ -1,4 +1,6 @@
-from typing import Any, Literal, TypedDict
+from typing import Literal, TypedDict
+
+from src.models.enums import CallStateName
 
 
 class CallState(TypedDict, total=False):
@@ -15,21 +17,26 @@ class CallState(TypedDict, total=False):
     max_turns: int
 
     # Hội thoại
+    last_user_text: str | None
+    last_bot_text: str | None
     user_text: str | None
     bot_utterance: str
-    conversation_history: list[dict[str, Any]]
+    conversation_history: list[dict[str, object]]
     intent: str | None
     failed_understanding_count: int
     silence_count: int
 
     # Xác minh danh tính
+    full_name: str | None
+    dob: str | None
+    verified_identity: bool
     provided_name: str | None
     provided_dob: str | None
     identity_verified: bool
     patient_id: str | None
 
     # Dữ liệu lịch hẹn
-    appointment: dict[str, Any] | None
+    appointment: dict[str, object] | None
     appointment_version: int | None
     offered_slot_ids: list[str]
     selected_slot_id: str | None
@@ -41,14 +48,7 @@ class CallState(TypedDict, total=False):
     reschedule_confirmed: bool
 
     # Kết quả
-    state: Literal[
-        "AWAITING_IDENTITY",
-        "AWAITING_INTENT",
-        "AWAITING_CONFIRMATION",
-        "OFFERING_SLOTS",
-        "CLOSING",
-        "ENDED",
-    ]
+    state: CallStateName
     ended: bool
     outcome: Literal[
         "CONFIRMED",
@@ -63,3 +63,18 @@ class CallState(TypedDict, total=False):
     cancel_reason: str | None
     transfer_reason: str | None
     error: str | None
+
+
+def create_initial_call_state(call_id: str) -> CallState:
+    """Tạo state tối thiểu cho một cuộc gọi mới theo yêu cầu Day 1."""
+
+    return CallState(
+        call_id=call_id,
+        state=CallStateName.AWAITING_IDENTITY,
+        full_name=None,
+        dob=None,
+        verified_identity=False,
+        patient_id=None,
+        last_user_text=None,
+        last_bot_text=None,
+    )

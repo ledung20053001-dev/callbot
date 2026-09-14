@@ -1,0 +1,75 @@
+<!doctype html>
+<html lang="vi">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Giao diện nội bộ kiểm thử hội thoại Callbot">
+  <title>Callbot · Internal Console</title>
+  <link rel="stylesheet" href="/internal/styles.css?v=6">
+</head>
+<body>
+  <a class="skip-link" href="#message-input">Chuyển đến ô nhập hội thoại</a>
+  <header class="topbar">
+    <div class="figure-label"><b>FIGURE 0</b><span>A reference call, played end to end</span></div>
+    <nav class="scenario-nav" aria-label="Kịch bản cuộc gọi">
+      <button type="button" aria-current="page">IDENTITY</button>
+      <button type="button" disabled>CONFIRM</button><button type="button" disabled>CANCEL</button>
+      <button type="button" disabled>TRANSFER</button><button type="button" disabled>BOOK</button>
+      <button type="button" disabled>RESCHEDULE</button>
+    </nav>
+    <span id="connection-label" class="connection-label" role="status">LOADING UI · V6</span>
+  </header>
+
+  <main class="call-layout">
+    <section class="conversation-column" aria-labelledby="conversation-title">
+      <div class="call-controls">
+        <h1 id="conversation-title">Conversation transcript</h1>
+        <form id="start-form" class="start-form" action="/internal/" method="post" onsubmit="return false;">
+          <label for="direction">Direction</label>
+          <select id="direction" name="direction"><option value="inbound">Inbound</option><option value="outbound">Outbound</option></select>
+          <label class="sr-only" for="caller-number">Số gọi đến, chỉ là metadata</label>
+          <input id="caller-number" name="caller_number" type="tel" autocomplete="off" placeholder="Caller number · metadata">
+          <button id="start-button" class="plain-button" type="submit" disabled>Start call</button>
+        </form>
+      </div>
+      <div id="transcript" class="transcript" aria-live="polite" aria-label="Nội dung hội thoại">
+        <div id="transcript-empty" class="empty-state"><span>NO ACTIVE CALL</span><p>Bắt đầu phiên gọi để xem nội dung hội thoại.</p></div>
+      </div>
+      <form id="message-form" class="composer" action="/internal/" method="post" onsubmit="return false;">
+        <label for="message-input">Caller input</label>
+        <div class="composer-row">
+          <textarea id="message-input" name="text" rows="2" placeholder="Nhập nội dung người gọi…" disabled></textarea>
+          <button id="voice-button" class="icon-button" type="button" aria-label="Bắt đầu nhận giọng nói" disabled>
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 15a3 3 0 0 0 3-3V6a3 3 0 0 0-6 0v6a3 3 0 0 0 3 3Zm-1-9a1 1 0 0 1 2 0v6a1 1 0 0 1-2 0V6Zm7 6a6 6 0 0 1-5 5.91V20h3v2H8v-2h3v-2.09A6 6 0 0 1 6 12h2a4 4 0 0 0 8 0h2Z"/></svg>
+          </button>
+          <button id="send-button" class="plain-button send-button" type="submit" disabled>Send</button>
+        </div>
+        <div class="composer-meta"><span id="voice-status" role="status">VOICE · INACTIVE</span><span id="voice-help">Speech Recognition cần được trình duyệt hỗ trợ.</span><span>CTRL + ENTER TO SEND</span></div>
+      </form>
+    </section>
+
+    <aside class="state-column" aria-label="Thông tin và luồng xử lý cuộc gọi">
+      <section class="state-block">
+        <div class="block-title"><span>CALL STATE</span><strong id="state-value" data-tone="neutral">NOT_STARTED</strong></div>
+        <div class="signal-line" aria-hidden="true"></div>
+        <dl class="fact-grid">
+          <div><dt>Verified identity</dt><dd id="verified-value" data-tone="neutral">FALSE</dd></div>
+          <div><dt>Call ID</dt><dd id="call-id-value">—</dd></div>
+        </dl>
+      </section>
+      <section class="record-block">
+        <h2>PROTECTED APPOINTMENT RECORD</h2>
+        <div id="record-value" class="guard-record"><span>CORE GUARD · LOCKED</span><p>Chi tiết lịch hẹn chỉ hiển thị sau khi danh tính được xác minh qua Bot API.</p></div>
+      </section>
+      <section class="flow-block">
+        <div class="flow-heading"><h2>API &amp; VOICE PROCESSING</h2><button id="clear-events" class="text-button" type="button">CLEAR</button></div>
+        <div class="voice-flow" aria-hidden="true"><span>MIC</span><i></i><span>STT</span><i></i><span>BOT API</span><i></i><span>CORE</span></div>
+        <ol id="event-list" class="event-list" aria-live="polite" aria-label="Nhật ký gọi Bot API"><li class="empty-event">Chưa có request nào.</li></ol>
+      </section>
+    </aside>
+  </main>
+  <div id="toast" class="toast" role="status" aria-live="polite" hidden></div>
+  <script src="/internal/text-utils.js?v=6" defer></script>
+  <script src="/internal/app.js?v=6" defer></script>
+</body>
+</html>

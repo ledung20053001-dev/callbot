@@ -62,6 +62,7 @@ python_version = "3.11"
 strict = true
 warn_unreachable = true
 pretty = true
+explicit_package_bases = true
 exclude = ["clinic-mock"]
 
 [tool.pytest.ini_options]
