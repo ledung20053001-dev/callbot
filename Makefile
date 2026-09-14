@@ -1,7 +1,7 @@
 PYTHON ?= python
 VENV ?= .venv
 
-.PHONY: help install install-all run test test-fast test-safety test-integration lint format typecheck check coverage docker-build docker-up docker-down
+.PHONY: help install install-all run test test-ui test-fast test-safety test-integration lint format typecheck check coverage docker-build docker-up docker-down
 
 help:
 	@echo "install          Install runtime and development dependencies"
@@ -26,6 +26,9 @@ run:
 test:
 	$(PYTHON) -m pytest
 
+test-ui:
+	node --test tests/ui/text-utils.test.mjs
+
 test-fast:
 	$(PYTHON) -m pytest -m "not integration and not slow"
 
@@ -44,7 +47,7 @@ format:
 typecheck:
 	$(PYTHON) -m mypy src
 
-check: lint typecheck test
+check: lint typecheck test test-ui
 
 coverage:
 	$(PYTHON) -m pytest --cov=src --cov-report=term-missing --cov-report=html
